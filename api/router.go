@@ -59,13 +59,14 @@ func (*router) Health(ctx echo.Context) error {
 }
 
 func (r *router) setRoutes(echo *echo.Echo) {
+	controller := pizza.NewController()
+
 	echo.GET("/", r.Index)
 	echo.GET("/health", r.Health)
 
 	v1 := echo.Group("/v1")
-
-	controller := pizza.NewController()
 	pizza := v1.Group("/pizza")
+
 	pizza.POST("", controller.Add)
 	pizza.GET("", controller.GetAll)
 	pizza.GET("/:name", controller.GetByName)

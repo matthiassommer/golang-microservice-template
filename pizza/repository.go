@@ -49,9 +49,9 @@ func (r *repository) FindByName(name string) (*Pizza, error) {
 }
 
 func (r *repository) Update(pizza *Pizza) (*Pizza, error) {
-	match, err := r.FindByName(pizza.Name)
-	if err != nil {
-		return nil, err
+	match, ok := r.pizzas[pizza.Name]
+	if !ok {
+		return nil, Errorf(ErrorTypeResourceNotFound, "pizza named %s not found", pizza.Name)
 	}
 
 	match.Ingredient = pizza.Ingredient
@@ -60,10 +60,8 @@ func (r *repository) Update(pizza *Pizza) (*Pizza, error) {
 }
 
 func (r *repository) Save(pizza *Pizza) (*Pizza, error) {
-	match, err := r.FindByName(pizza.Name)
-	if err != nil {
-		return nil, err
-	} else if match != nil {
+	_, ok := r.pizzas[pizza.Name]
+	if ok {
 		return nil, Errorf(ErrorTypeConflict, "there is already a pizza named %s", pizza.Name)
 	}
 

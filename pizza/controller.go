@@ -49,10 +49,10 @@ func (c *controller) Add(ctx echo.Context) error {
 	}
 
 	found, err := c.repository.FindByName(dto.Name)
-	if err != nil {
-		return Error(err, ErrorTypeDatabase)
-	} else if found != nil {
+	if found != nil {
 		return Errorf(ErrorTypeConflict, "a pizza with the name '%s' already exists", dto.Name)
+	} else if err != nil {
+		Log.Debug(err)
 	}
 
 	entity, err := dto.ConvertToModel()
@@ -127,33 +127,17 @@ func (c *controller) Update(ctx echo.Context) error {
 		return Error(err, ErrorTypeValidation)
 	}
 
-	pizza, err := c.repository.FindByName(name)
-	if err != nil {
-		return Error(err, ErrorTypeDatabase)
-	}
+	pizza, _ := c.repository.FindByName(name)
 	if pizza == nil {
 		return Errorf(ErrorTypeResourceNotFound, "there is no pizza with name '%s'", name)
-	}
-
-	// preserve id for save
-	id := pizza.ID
-
-	// this is used to check if another pizza with the same name already exists
-	found, err := c.repository.FindByName(dto.Name)
-	if err != nil {
-		return Error(err, ErrorTypeDatabase)
-	}
-	if found != nil && found.ID != pizza.ID {
-		return Errorf(ErrorTypeConflict, "a pizza with the name '%s' already exists", pizza.Name)
 	}
 
 	pizza, err = dto.ConvertToModel()
 	if err != nil {
 		return Error(err, ErrorTypeInternalServer)
 	}
-	pizza.ID = id
 
-	pizza, err = c.repository.Save(pizza)
+	pizza, err = c.repository.Update(pizza)
 	if err != nil {
 		return Error(err, ErrorTypeDatabase)
 	}

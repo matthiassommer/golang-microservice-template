@@ -58,64 +58,64 @@ func (e *CommonError) GetErrorType() string {
 	return e.XType
 }
 
-// ErrorBadRequest Error for 400 Responses
-type ErrorBadRequest struct {
+// errorBadRequest Error for 400 Responses
+type errorBadRequest struct {
 	CommonError
 }
 
-// ErrorUnauthorized Error for 401 Responses
-type ErrorUnauthorized struct {
+// errorUnauthorized Error for 401 Responses
+type errorUnauthorized struct {
 	CommonError
 }
 
-// ErrorBinding Error for 400 Responses when echo.Bind fails
-type ErrorBinding struct {
+// errorBinding Error for 400 Responses when echo.Bind fails
+type errorBinding struct {
 	CommonError
 }
 
-// ErrorValidation Error for 401 Responses when validation fails
-type ErrorValidation struct {
+// errorValidation Error for 401 Responses when validation fails
+type errorValidation struct {
 	CommonError
 }
 
-// ErrorDatabase Error for 500 Responses when database functions fails
-type ErrorDatabase struct {
+// errorDatabase Error for 500 Responses when database functions fails
+type errorDatabase struct {
 	CommonError
 }
 
-// ErrorResourceNotFound Error for 404 Responses when a resource is not found
-type ErrorResourceNotFound struct {
+// errorResourceNotFound Error for 404 Responses when a resource is not found
+type errorResourceNotFound struct {
 	CommonError
 }
 
-// ErrorURLNotFound Error for 404 Responses when a URL is not available
-type ErrorURLNotFound struct {
+// errorURLNotFound Error for 404 Responses when a URL is not available
+type errorURLNotFound struct {
 	CommonError
 }
 
-// ErrorInternalServer Error for 500 Responses when server runs into an error.
+// errorInternalServer Error for 500 Responses when server runs into an error.
 // Also used for errors, which are not clearly specified
-type ErrorInternalServer struct {
+type errorInternalServer struct {
 	CommonError
 }
 
-// ErrorBadGateway Error for 502 Responses when request can not be served.
-type ErrorBadGateway struct {
+// errorBadGateway Error for 502 Responses when request can not be served.
+type errorBadGateway struct {
 	CommonError
 }
 
-// ErrorForbidden Error for 403 Responses when access to the requested resource is forbidden.
-type ErrorForbidden struct {
+// errorForbidden Error for 403 Responses when access to the requested resource is forbidden.
+type errorForbidden struct {
 	CommonError
 }
 
-// ErrorConflict Error for 409 Responses when the request conflicts with the current state of the server.
-type ErrorConflict struct {
+// errorConflict Error for 409 Responses when the request conflicts with the current state of the server.
+type errorConflict struct {
 	CommonError
 }
 
-// ErrorTooManyRequests Error for 429 Responses
-type ErrorTooManyRequests struct {
+// errorTooManyRequests Error for 429 Responses
+type errorTooManyRequests struct {
 	CommonError
 }
 
@@ -123,7 +123,7 @@ func Errorf(xtype string, message string, args ...interface{}) error {
 	return Error(fmt.Sprintf(message, args...), xtype)
 }
 
-// Error Factory method for creating CommonErrors
+// Error factory for creating specific error responses.
 func Error(i interface{}, xtype string) error {
 	var err error
 	if str, ok := i.(string); ok {
@@ -136,62 +136,56 @@ func Error(i interface{}, xtype string) error {
 
 	switch xtype {
 	case ErrorTypeBadRequest:
-		return &ErrorBadRequest{CommonError{err, http.StatusBadRequest, xtype}}
+		return &errorBadRequest{CommonError{err, http.StatusBadRequest, xtype}}
 	case ErrorTypeBinding:
-		return &ErrorBinding{CommonError{err, http.StatusBadRequest, xtype}}
+		return &errorBinding{CommonError{err, http.StatusBadRequest, xtype}}
 	case ErrorTypeValidation:
-		return &ErrorValidation{CommonError{err, http.StatusBadRequest, xtype}}
+		return &errorValidation{CommonError{err, http.StatusBadRequest, xtype}}
 	case ErrorTypeDatabase:
-		return &ErrorDatabase{CommonError{err, http.StatusInternalServerError, xtype}}
+		return &errorDatabase{CommonError{err, http.StatusInternalServerError, xtype}}
 	case ErrorTypeResourceNotFound:
-		return &ErrorResourceNotFound{CommonError{err, http.StatusNotFound, xtype}}
+		return &errorResourceNotFound{CommonError{err, http.StatusNotFound, xtype}}
 	case ErrorTypeURLNotFound:
-		return &ErrorURLNotFound{CommonError{err, http.StatusNotFound, xtype}}
+		return &errorURLNotFound{CommonError{err, http.StatusNotFound, xtype}}
 	case ErrorTypeUnauthorized:
-		return &ErrorUnauthorized{CommonError{err, http.StatusUnauthorized, xtype}}
+		return &errorUnauthorized{CommonError{err, http.StatusUnauthorized, xtype}}
 	case ErrorTypeBadGateway:
-		return &ErrorBadGateway{CommonError{err, http.StatusBadGateway, xtype}}
+		return &errorBadGateway{CommonError{err, http.StatusBadGateway, xtype}}
 	case ErrorTypeForbidden:
-		return &ErrorForbidden{CommonError{err, http.StatusForbidden, xtype}}
+		return &errorForbidden{CommonError{err, http.StatusForbidden, xtype}}
 	case ErrorTypeConflict:
-		return &ErrorConflict{CommonError{err, http.StatusConflict, xtype}}
+		return &errorConflict{CommonError{err, http.StatusConflict, xtype}}
 	case ErrorTypeTooManyRequests:
-		return &ErrorTooManyRequests{CommonError{err, http.StatusTooManyRequests, xtype}}
+		return &errorTooManyRequests{CommonError{err, http.StatusTooManyRequests, xtype}}
 	default:
-		return &ErrorInternalServer{CommonError{err, http.StatusInternalServerError, xtype}}
+		return &errorInternalServer{CommonError{err, http.StatusInternalServerError, xtype}}
 	}
 }
 
-// ValidationErrorStructure - Representation of a validation error
-type ValidationErrorStructure struct {
+// validationErrorStructure represents a validation error.
+type validationErrorStructure struct {
 	Class     string `json:"class,omitempty"`
 	Field     string `json:"field"`
 	Validator string `json:"validator"`
 	Message   string `json:"message,omitempty"`
 }
 
-// HTTPError - Basic Implementation of ClientError
-type HTTPError struct {
+// httpError - Basic Implementation of ClientError
+type httpError struct {
 	Code             string                     `json:"code,omitempty"`
 	Type             string                     `json:"type"`
 	Message          string                     `json:"message"`
 	MessageID        string                     `json:"messageId,omitempty"`
-	ValidationErrors []ValidationErrorStructure `json:"validationErrors,omitempty"`
+	ValidationErrors []validationErrorStructure `json:"validationErrors,omitempty"`
 	Status           int                        `json:"-"`
 }
 
-func (e *HTTPError) Error() string {
+func (e *httpError) Error() string {
 	return e.Message
 }
 
 // HTTPErrorHandler Error handler to use in echo's middleware
-// Example:
-// 			router := echo.New()
-// 			router.HTTPErrorHandler = commons.HTTPErrorHandler
 func HTTPErrorHandler(err error, c echo.Context) {
-
-	//TODO: log resultErr to external monitoring service
-
 	// Because echo.NotFoundHandler return an echo.HTTPError and to avoid duplicate of code at router initialization
 	// the error given by echo will be overwritten by an error of our own type
 	if (reflect.TypeOf(err) == reflect.TypeOf(&echo.HTTPError{})) && (err.(*echo.HTTPError).Code == http.StatusNotFound) {
@@ -207,8 +201,8 @@ func HTTPErrorHandler(err error, c echo.Context) {
 	requestID := c.Response().Header().Get(echo.HeaderXRequestID)
 
 	switch err.(type) {
-	case *ErrorValidation:
-		err = c.JSON(err.(*ErrorValidation).Code, validationErrorToHTTPError(err.(*ErrorValidation), requestID))
+	case *errorValidation:
+		err = c.JSON(err.(*errorValidation).Code, validationErrorToHTTPError(err.(*errorValidation), requestID))
 	case HasHTTPStatus:
 		httpError := newHTTPError(err.(HasHTTPStatus), nil, requestID)
 		err = c.JSON(err.(HasHTTPStatus).GetHTTPStatusCode(), httpError)
@@ -219,10 +213,10 @@ func HTTPErrorHandler(err error, c echo.Context) {
 }
 
 // newHTTPError - Create a new HTTPError instance
-func newHTTPError(err HasHTTPStatus, valErrors []ValidationErrorStructure, requestID string) error {
+func newHTTPError(err HasHTTPStatus, valErrors []validationErrorStructure, requestID string) error {
 	errMsg := err.(error).Error()
 
-	return &HTTPError{
+	return &httpError{
 		Code:             "",
 		Type:             err.GetErrorType(),
 		Message:          errMsg,
@@ -233,15 +227,14 @@ func newHTTPError(err HasHTTPStatus, valErrors []ValidationErrorStructure, reque
 }
 
 // validationErrorToHTTPError - Generate a HTTPError for a bad request including validation errors
-func validationErrorToHTTPError(err *ErrorValidation, requestID string) error {
-
+func validationErrorToHTTPError(err *errorValidation, requestID string) error {
 	// extract validation error information from validation structs
-	valErrors := []ValidationErrorStructure{}
+	valErrors := []validationErrorStructure{}
 	if verr, ok := err.Err.(validator.ValidationErrors); ok {
 		for i := 0; i < len(verr); i++ {
 			structNames := strings.Split(verr[i].StructNamespace(), ".")
 			structNS := structNames[0]
-			valError := ValidationErrorStructure{structNS, verr[i].StructField(), verr[i].ActualTag(), verr[i].Translate(nil)}
+			valError := validationErrorStructure{structNS, verr[i].StructField(), verr[i].ActualTag(), verr[i].Translate(nil)}
 			valErrors = append(valErrors, valError)
 		}
 	}
@@ -249,26 +242,4 @@ func validationErrorToHTTPError(err *ErrorValidation, requestID string) error {
 	// and paste it to http error struct
 	httpError := newHTTPError(err, valErrors, requestID)
 	return httpError
-}
-
-// DetermineErrorTypeByStatusCode Determines a suitable ErrorType based on the status code
-func DetermineErrorTypeByStatusCode(statusCode int) string {
-	switch statusCode {
-	case 400:
-		return ErrorTypeBadRequest
-	case 401:
-		return ErrorTypeUnauthorized
-	case 403:
-		return ErrorTypeForbidden
-	case 404:
-		return ErrorTypeResourceNotFound
-	case 409:
-		return ErrorTypeConflict
-	case 429:
-		return ErrorTypeTooManyRequests
-	case 500:
-		return ErrorTypeInternalServer
-	default:
-		return ErrorTypeInternalServer
-	}
 }

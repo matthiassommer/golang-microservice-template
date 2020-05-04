@@ -2,6 +2,13 @@ package pizza
 
 import (
 	. "golang-microservice-template/utils"
+	"sync"
+)
+
+// errors
+var (
+	ErrPizzaNotFound  = "pizza named %s not found"
+	ErrPizzaNameTaken = "there is already a pizza named %s"
 )
 
 // Repository used to persist pizza data.
@@ -20,6 +27,7 @@ type Repository interface {
 
 type repository struct {
 	pizzas map[string]*Pizza
+	sync.RWMutex
 }
 
 // NewRepository creates a new pizza repository with pre-defined values.
@@ -30,6 +38,9 @@ func NewRepository() Repository {
 }
 
 func (r *repository) FindAll() ([]*Pizza, error) {
+	r.RLock()
+	defer r.RUnlock()
+
 	list := []*Pizza{}
 	for _, v := range r.pizzas {
 		list = append(list, v)
@@ -39,19 +50,25 @@ func (r *repository) FindAll() ([]*Pizza, error) {
 }
 
 func (r *repository) FindByName(name string) (*Pizza, error) {
+	r.RLock()
+	defer r.RUnlock()
+
 	match, ok := r.pizzas[name]
 
 	if match == nil || !ok {
-		return nil, Errorf(ErrorTypeResourceNotFound, "pizza named %s not found", name)
+		return nil, Errorf(ErrorTypeResourceNotFound, ErrPizzaNotFound, name)
 	}
 
 	return match, nil
 }
 
 func (r *repository) Update(pizza *Pizza) (*Pizza, error) {
+	r.Lock()
+	defer r.Unlock()
+
 	match, ok := r.pizzas[pizza.Name]
 	if !ok {
-		return nil, Errorf(ErrorTypeResourceNotFound, "pizza named %s not found", pizza.Name)
+		return nil, Errorf(ErrorTypeResourceNotFound, ErrPizzaNotFound, pizza.Name)
 	}
 
 	match.Ingredient = pizza.Ingredient
@@ -60,9 +77,12 @@ func (r *repository) Update(pizza *Pizza) (*Pizza, error) {
 }
 
 func (r *repository) Save(pizza *Pizza) (*Pizza, error) {
+	r.Lock()
+	defer r.Unlock()
+
 	_, ok := r.pizzas[pizza.Name]
 	if ok {
-		return nil, Errorf(ErrorTypeConflict, "there is already a pizza named %s", pizza.Name)
+		return nil, Errorf(ErrorTypeConflict, ErrPizzaNameTaken, pizza.Name)
 	}
 
 	r.pizzas[pizza.Name] = pizza
@@ -71,6 +91,9 @@ func (r *repository) Save(pizza *Pizza) (*Pizza, error) {
 }
 
 func (r *repository) Delete(name string) error {
+	r.Lock()
+	defer r.Unlock()
+
 	delete(r.pizzas, name)
 
 	return nil

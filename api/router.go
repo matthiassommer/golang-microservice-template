@@ -19,8 +19,8 @@ type Router interface {
 	Index(echo.Context) error
 	// Start starts listening for incoming requests on the specified address/port.
 	Start(address string) error
-	// Shutdown is waiting some seconds to stop the server gracefully and to release resources.
-	Shutdown(ctx context.Context) error
+	// Graceful server shutdown
+	Shutdown()
 }
 
 type router struct {
@@ -78,11 +78,12 @@ func (r *router) setRoutes(echo *echo.Echo) {
 	pizza.DELETE("/:name", controller.Delete)
 }
 
-func (router *Router) Shutdown() {
+// Shutdown is waiting some seconds to stop the server gracefully and to release resources.
+func (r *router) Shutdown() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := router.echo.Shutdown(ctx); err != nil {
+	if err := r.echo.Shutdown(ctx); err != nil {
 		Log.Fatal(err)
 	}
 }

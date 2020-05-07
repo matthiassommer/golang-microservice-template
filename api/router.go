@@ -1,9 +1,11 @@
 package api
 
 import (
+	"context"
 	"golang-microservice-template/pizza"
 	. "golang-microservice-template/utils"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -17,6 +19,8 @@ type Router interface {
 	Index(echo.Context) error
 	// Start starts listening for incoming requests on the specified address/port.
 	Start(address string) error
+	// Shutdown is waiting some seconds to stop the server gracefully and to release resources.
+	Shutdown(ctx context.Context) error
 }
 
 type router struct {
@@ -72,4 +76,13 @@ func (r *router) setRoutes(echo *echo.Echo) {
 	pizza.GET("/:name", controller.GetByName)
 	pizza.PATCH("/:name", controller.Update)
 	pizza.DELETE("/:name", controller.Delete)
+}
+
+func (router *Router) Shutdown() {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := router.echo.Shutdown(ctx); err != nil {
+		Log.Fatal(err)
+	}
 }

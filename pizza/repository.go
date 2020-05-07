@@ -7,8 +7,8 @@ import (
 
 // errors
 var (
-	ErrPizzaNotFound  = "pizza named %s not found"
-	ErrPizzaNameTaken = "there is already a pizza named %s"
+	ErrPizzaNotFound  = "pizza %s not found"
+	ErrPizzaNameTaken = "pizza '%s' already exists"
 )
 
 // Repository used to persist pizza data.

@@ -12,6 +12,11 @@ const (
 	PathParamName = "name"
 )
 
+// errors
+var (
+	ErrParamNameMissing = "missing pizza name in path"
+)
+
 // Controller handles all requests related to pizza data.
 type Controller interface {
 	// Add creates a new pizza.
@@ -50,7 +55,7 @@ func (c *controller) Add(ctx echo.Context) error {
 
 	found, err := c.repository.FindByName(dto.Name)
 	if found != nil {
-		return Errorf(ErrorTypeConflict, "a pizza with the name '%s' already exists", dto.Name)
+		return Errorf(ErrorTypeConflict, ErrPizzaNameTaken, dto.Name)
 	} else if err != nil {
 		Log.Debug(err)
 	}
@@ -101,7 +106,7 @@ func (c *controller) GetByName(ctx echo.Context) error {
 	if err != nil {
 		return Error(err, ErrorTypeDatabase)
 	} else if pizza == nil {
-		return Errorf(ErrorTypeResourceNotFound, "pizza '%s' could not be found", name)
+		return Errorf(ErrorTypeResourceNotFound, ErrPizzaNotFound, name)
 	}
 
 	dto, err := pizza.ConvertToDto()
@@ -129,7 +134,7 @@ func (c *controller) Update(ctx echo.Context) error {
 
 	pizza, _ := c.repository.FindByName(name)
 	if pizza == nil {
-		return Errorf(ErrorTypeResourceNotFound, "there is no pizza with name '%s'", name)
+		return Errorf(ErrorTypeResourceNotFound, ErrPizzaNotFound, name)
 	}
 
 	pizza, err = dto.ConvertToModel()
@@ -160,7 +165,7 @@ func (c *controller) Delete(ctx echo.Context) error {
 	if err != nil {
 		return Error(err, ErrorTypeDatabase)
 	} else if pizza == nil {
-		return Errorf(ErrorTypeResourceNotFound, "a pizza with the name '%s' does not exist", name)
+		return Errorf(ErrorTypeResourceNotFound, ErrPizzaNotFound, name)
 	}
 
 	if err := c.repository.Delete(pizza.Name); err != nil {
@@ -173,7 +178,7 @@ func (c *controller) Delete(ctx echo.Context) error {
 func checkNameInPath(ctx echo.Context) (string, error) {
 	name := ctx.Param(PathParamName)
 	if name == "" {
-		return "", Error("missing pizza name in path", ErrorTypeBadRequest)
+		return "", Error(ErrParamNameMissing, ErrorTypeBadRequest)
 	}
 	return name, nil
 }

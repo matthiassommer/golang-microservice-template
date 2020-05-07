@@ -5,19 +5,22 @@ Uses a controller/repository pattern to handle typical CRUD actions.
 Exposes the controller methods via HTTP endpoints.
 
 
-## Install dependencies
+## Dependencies
 
 ```bash
-go get -d ./...
+go mod download
 ```
 
-## Generate mocks
+## Mocks
+
+Mocks are generated with (Mockery)[https://github.com/vektra/mockery].
+Put the executable under $GOPATH/bin/mockery and create mocks for interfaces with
 
 ```bash
 %GOPATH%/bin/mockery -all -case=underscore -inpkg
 ```
 
-## Go Lint
+## Lint
 
 1. Get golangci-lint from [Github](https://github.com/golangci/golangci-lint).
 2. Follow the steps under [Editor Integration](https://github.com/golangci/golangci-lint#editor-integration).

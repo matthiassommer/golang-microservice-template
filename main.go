@@ -3,7 +3,10 @@ package main
 import (
 	"golang-microservice-template/api"
 	. "golang-microservice-template/utils"
+	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 )
 
 const (
@@ -21,7 +24,13 @@ func main() {
 		port = localPort
 	}
 
-	Log.Fatal(router.Start(":" + strconv.Itoa(port)))
+	go func() {
+		Log.Fatal(router.Start(":" + strconv.Itoa(port)))
+	}()
 
-	Log.Infof("[PizzaService] Started")
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGABRT)
+	<-done
+
+	router.Shutdown()
 }

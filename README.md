@@ -4,6 +4,8 @@ Exemplary microservice implementation in Golang.
 Uses a controller/repository pattern to handle typical CRUD actions.
 Exposes the controller methods via HTTP endpoints.
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/matthiassommer/golang-microservice-template)](https://goreportcard.com/report/github.com/matthiassommer/golang-microservice-template)
+
 
 ## Dependencies
 

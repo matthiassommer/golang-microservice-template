@@ -13,7 +13,7 @@ RUN cd pizza-service && \
     go test -v ./... -coverprofile=cover.out && go tool cover -func=cover.out && \
     go build -a -installsuffix cgo -o app .
 
-FROM alpine:3.10 AS runtime
+FROM alpine:3.18.4 AS runtime
 COPY --from=build /go/src/pizza-service/app ./
 EXPOSE 8080/tcp
 ENTRYPOINT ["./app"]
